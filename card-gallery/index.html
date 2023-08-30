@@ -96,7 +96,7 @@
   <div class="inputGroup">
     <div style="margin-bottom:5px;"><a href="/">Home</a></div>
     <input type="text" class="searchInput" placeholder='Search for a string of text in the details of a card.' />
-    <details class="tips">
+    <details class="tips advanced">
       <summary>Advanced</summary>
       <div class="checkboxGroup">
         <input type="checkbox" id="regex" value="true">
@@ -137,6 +137,8 @@
     ]
     
     let currentCardCategory = 0;
+    let cardsInfo = []
+    let properties = {}
 
     // Load first set of card data (the rest will follow)
     setTimeout(function () {
@@ -202,12 +204,12 @@
           }
         }
       }
-
+      
       // Iterate through each data line
       for (i = firstDataLine; i < dataLines.length; i++) {
         // Separate out the values by splitting the line by tabs
         const cardData = dataLines[i].split('\t');
-
+        
         // Get image path differently depending on the category (due to spreadsheet formatting)
         let imagePath1, imagePath2, folderName, fileName;
         switch (dataGroup) {
@@ -276,6 +278,11 @@
             imagePath2 = imagePath2.replaceAll('"', '').replaceAll('?', '');
             break;
         }
+        let cardInfo = {
+          imagePath1,
+          imagePath2
+        }
+        
 
         // Create new card HTML
 
@@ -283,6 +290,11 @@
         let detailsElement = '';
         for (ii = 0; ii < cardData.length - 1; ii++) {
           detailsElement += `<p><strong>${labels[ii]}:</strong> ${cardData[ii]}</p>`;
+          cardInfo[labels[ii]] = cardData[ii]
+          if(!(labels[ii] in properties)){
+            properties[labels[ii]] = {}
+          }
+          properties[labels[ii]][cardData[ii]] = 'false'
         }
 
         // Add extra classes to the cards if necessary
@@ -325,8 +337,10 @@
 
         // Add the card element to the display
         $(".cardFlexDisplay").append(newHTML);
+        $(".cardFlexDisplay .card").last().data(cardInfo)
+        cardsInfo.push(cardInfo)
       }
-
+      
       // Start loading next card category
       currentCardCategory++;
       const nextCategoryName = cardCategories[currentCardCategory];
@@ -351,6 +365,34 @@
           // Toggle image
           $(this).parent().children('.cardImage').toggle();
         })
+        console.log(cardsInfo)
+        console.log(properties)
+        
+      $.each(properties, function(property, propertyValues) {   
+        let newHTML = `<select for="${property}"></select>`;
+        $(".advanced").append(`<label id="${property}">${property}</label>`);
+        $(".advanced").append(`<select id="${property}"><option></option></select>`);
+        $(".advanced select").last().change( function (e) {
+          let searchValue = $(this).val()
+          let searchAttr = $(this).attr('id')
+          $(".card").each(function (index, element) {
+            if ($(this).data(searchAttr) == searchValue) {
+              $(this).show();
+            }
+            else {
+              $(this).hide();
+            }
+          })
+        }); 
+        $.each(propertyValues, function(key, value) {   
+          $(".advanced select").last()
+            .append($("<option></option>")
+              .attr("value", key)
+              .text(key)
+              ); 
+        });
+      });
+        
       }
 
     }
