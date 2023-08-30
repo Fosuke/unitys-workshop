@@ -102,6 +102,9 @@
         <input type="checkbox" id="regex" value="true">
       <label for="regex">Use regular expressions</label>
       </div>
+      <div>
+        <select id="property"><option></option></select> = <select id="property-value"><option></option></select>
+      </div>
     </details>
     <details class="tips">
       <summary>Tips</summary>
@@ -368,31 +371,35 @@
         console.log(cardsInfo)
         console.log(properties)
         
-      $.each(properties, function(property, propertyValues) {   
-        let newHTML = `<select for="${property}"></select>`;
-        $(".advanced").append(`<label id="${property}">${property}</label>`);
-        $(".advanced").append(`<select id="${property}"><option></option></select>`);
-        $(".advanced select").last().change( function (e) {
+        $.each(properties, function(property, propertyValues) {   
+          $("#property").last()
+              .append($("<option></option>")
+                .attr("value", property)
+                .text(property))
+          
+        });
+        $("#property").last().change( function (e) {
+          $("#property-value option").remove()
+          $("#property-value").last()
+              .append($("<option></option>"))
+          $.each(properties[$(this).val()], function(key, value) {
+            $("#property-value").last()
+              .append($("<option></option>")
+                .attr("value", key)
+                .text(key))
+          })
+        })
+
+        $("#property-value").last().change( function (e) {
           let searchValue = $(this).val()
-          let searchAttr = $(this).attr('id')
+          let searchAttr = $("#property").last().val()
+          $(".card").hide()
           $(".card").each(function (index, element) {
             if ($(this).data(searchAttr) == searchValue || searchValue == "") {
               $(this).show();
             }
-            else {
-              $(this).hide();
-            }
           })
-        }); 
-        $.each(propertyValues, function(key, value) {   
-          $(".advanced select").last()
-            .append($("<option></option>")
-              .attr("value", key)
-              .text(key)
-              ); 
-        });
-      });
-        
+        })
       }
 
     }
