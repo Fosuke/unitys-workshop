@@ -376,7 +376,7 @@
           let searchValue = $(this).val()
           let searchAttr = $(this).attr('id')
           $(".card").each(function (index, element) {
-            if ($(this).data(searchAttr) == searchValue) {
+            if ($(this).data(searchAttr) == searchValue || searchValue == "") {
               $(this).show();
             }
             else {
